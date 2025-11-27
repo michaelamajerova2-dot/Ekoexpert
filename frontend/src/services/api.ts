@@ -13,7 +13,10 @@ const api = axios.create({
 export const recipeApi = {
   getAll: async (filters?: RecipeFilters): Promise<Recipe[]> => {
     const params = new URLSearchParams();
-    if (filters?.category) params.append('category', filters.category);
+    if (filters?.category) {
+      const categoryValue = Array.isArray(filters.category) ? filters.category.join(',') : filters.category;
+      params.append('category', categoryValue);
+    }
     if (filters?.tags) params.append('tags', filters.tags.join(','));
     if (filters?.search) params.append('search', filters.search);
 

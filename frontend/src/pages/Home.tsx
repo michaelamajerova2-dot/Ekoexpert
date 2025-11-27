@@ -3,7 +3,7 @@ import { MainLayout } from '../components/Layout/MainLayout';
 import { Sidebar } from '../components/Layout/Sidebar';
 import { RecipeList } from '../components/Recipe/RecipeList';
 import { useRecipes } from '../hooks/useRecipes';
-import { RecipeCategory, CATEGORY_LABELS, DEFAULT_TAGS } from '../types/recipe.types';
+import { RecipeCategory, DEFAULT_TAGS } from '../types/recipe.types';
 
 export const Home = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();

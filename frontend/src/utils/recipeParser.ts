@@ -69,8 +69,6 @@ export const parseRecipeFromText = (text: string): ParsedRecipe => {
 
   let currentSection: 'title' | 'ingredients' | 'instructions' | 'none' = 'none';
   let instructionLines: string[] = [];
-  let foundIngredientsSection = false;
-  let foundInstructionsSection = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -96,7 +94,6 @@ export const parseRecipeFromText = (text: string): ParsedRecipe => {
       lowerLine.includes('suroviny:')
     ) {
       currentSection = 'ingredients';
-      foundIngredientsSection = true;
       continue;
     }
 
@@ -112,14 +109,12 @@ export const parseRecipeFromText = (text: string): ParsedRecipe => {
       lowerLine.includes('postup:')
     ) {
       currentSection = 'instructions';
-      foundInstructionsSection = true;
       continue;
     }
 
     // Auto-detect ingredients by checkbox symbol ▢
     if (line.startsWith('▢') || line.includes('▢')) {
       currentSection = 'ingredients';
-      foundIngredientsSection = true;
       const cleanedLine = line.replace(/^▢\s*/, '').trim();
       if (cleanedLine) {
         ingredientLines.push('• ' + cleanedLine);

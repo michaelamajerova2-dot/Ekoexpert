@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { Plus, X, Upload, Image as ImageIcon, FileText, Sparkles } from 'lucide-react';
+import { Plus, X, Upload, FileText, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { recipeFormSchema, RecipeFormData } from '../../schemas/recipeSchema';
-import { RecipeCategory, CATEGORY_LABELS, DEFAULT_TAGS, Recipe } from '../../types/recipe.types';
+import { CATEGORY_LABELS, DEFAULT_TAGS, Recipe } from '../../types/recipe.types';
 import { recipeApi } from '../../services/api';
 import { parseRecipeFromText } from '../../utils/recipeParser';
 
@@ -49,7 +49,6 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
   const {
     register,
     handleSubmit,
-    control,
     watch,
     setValue,
     formState: { errors, isSubmitting },
@@ -141,7 +140,8 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
       // Simplest approach: use image URL if provided
       const recipeData = {
         ...data,
-        ingredients: processedIngredients,
+        ingredients: processedIngredients || '',
+        instructions: data.instructions || '',
         image: data.image || imagePreview,
       };
 

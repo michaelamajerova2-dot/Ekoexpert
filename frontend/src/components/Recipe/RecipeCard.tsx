@@ -1,21 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ChefHat } from 'lucide-react';
-import { Recipe, CATEGORY_LABELS } from '../../types/recipe.types';
+import { Recipe } from '../../types/recipe.types';
 
 interface RecipeCardProps {
   recipe: Recipe;
 }
-
-const getCategoryColor = (category: string) => {
-  const colors: Record<string, string> = {
-    breakfast: 'bg-breakfast',
-    lunch: 'bg-lunch',
-    dinner: 'bg-dinner',
-    snack: 'bg-snack',
-    dessert: 'bg-dessert',
-  };
-  return colors[category] || 'bg-gray-500';
-};
 
 export const RecipeCard = ({ recipe }: RecipeCardProps) => {
   return (
