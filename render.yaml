@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: smakociny-receptar
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    disk:
+      name: recipes-data
+      mountPath: /opt/render/project/src/backend/src/data
+      sizeGB: 1

@@ -16,6 +16,8 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+# Allow .env.production (no secrets, just config)
+!.env.production
 
 # IDE
 .vscode/
@@ -34,8 +36,8 @@ backend/uploads/*
 *.db
 *.sqlite
 *.sqlite3
-data/*.json
-!data/.gitkeep
+# Allow recipes.json to be committed
+!backend/src/data/recipes.json
 
 # Logs
 logs/

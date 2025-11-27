@@ -17,13 +17,24 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Static files (pre obrázky)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Routes
+// API Routes
 app.use('/api/recipes', recipeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Receptár API is running' });
 });
+
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from frontend/dist
+  app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+
+  // Handle React routing - return index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+  });
+}
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
