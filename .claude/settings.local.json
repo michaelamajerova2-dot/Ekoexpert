@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/usr/local/bin/node:*)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "Bash(/opt/homebrew/bin/npm --version)",
+      "Bash(chmod:*)",
+      "Bash(/opt/homebrew/bin/node /opt/homebrew/bin/ts-node-dev --respawn --transpile-only src/index.ts)",
+      "Bash(/opt/homebrew/bin/npm run dev)",
+      "Bash(./scripts/start-all.sh:*)",
+      "Bash(./scripts/check-status.sh:*)",
+      "Bash(curl:*)",
+      "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\")",
+      "Bash(npm install:*)",
+      "Bash(./scripts/restart-servers.sh:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
