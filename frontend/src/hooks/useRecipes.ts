@@ -26,7 +26,8 @@ export const useRecipes = (filters?: RecipeFilters) => {
   }, [
     Array.isArray(filters?.category) ? filters?.category.join(',') : filters?.category,
     filters?.tags?.join(','),
-    filters?.search
+    filters?.search,
+    filters?.sortBy
   ]);
 
   return { recipes, loading, error };

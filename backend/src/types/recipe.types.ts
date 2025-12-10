@@ -37,8 +37,11 @@ export interface Recipe {
   updatedAt: Date;
 }
 
+export type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
+
 export interface RecipeFilters {
   category?: string;
   tags?: string[];
   search?: string;
+  sortBy?: SortOption;
 }

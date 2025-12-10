@@ -12,7 +12,9 @@
       "Bash(curl:*)",
       "Bash(export PATH=\"/opt/homebrew/bin:/usr/local/bin:$PATH\")",
       "Bash(npm install:*)",
-      "Bash(./scripts/restart-servers.sh:*)"
+      "Bash(./scripts/restart-servers.sh:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

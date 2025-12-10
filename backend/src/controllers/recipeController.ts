@@ -1,17 +1,18 @@
 import { Request, Response } from 'express';
 import { RecipeService } from '../services/recipeService';
-import { RecipeCategory } from '../types/recipe.types';
+import { RecipeCategory, SortOption } from '../types/recipe.types';
 
 const recipeService = new RecipeService();
 
 export const getAllRecipes = async (req: Request, res: Response) => {
   try {
-    const { category, tags, search } = req.query;
+    const { category, tags, search, sortBy } = req.query;
 
     const filters = {
       category: category as RecipeCategory,
       tags: tags ? (tags as string).split(',') : undefined,
-      search: search as string
+      search: search as string,
+      sortBy: sortBy as SortOption
     };
 
     const recipes = await recipeService.getAllRecipes(filters);

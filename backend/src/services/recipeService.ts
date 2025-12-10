@@ -57,6 +57,23 @@ export class RecipeService {
       });
     }
 
+    // Zoradenie receptov
+    const sortBy = filters?.sortBy || 'newest';
+    recipes.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'a-z':
+          return a.title.localeCompare(b.title, 'sk');
+        case 'z-a':
+          return b.title.localeCompare(a.title, 'sk');
+        default:
+          return 0;
+      }
+    });
+
     return recipes;
   }
 

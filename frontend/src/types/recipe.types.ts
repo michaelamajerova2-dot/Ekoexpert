@@ -28,11 +28,21 @@ export interface Recipe {
   updatedAt: Date | string;
 }
 
+export type SortOption = 'newest' | 'oldest' | 'a-z' | 'z-a';
+
 export interface RecipeFilters {
   category?: string | string[];
   tags?: string[];
   search?: string;
+  sortBy?: SortOption;
 }
+
+export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Najnovšie' },
+  { value: 'oldest', label: 'Najstaršie' },
+  { value: 'a-z', label: 'Názov A-Z' },
+  { value: 'z-a', label: 'Názov Z-A' }
+];
 
 export const CATEGORY_LABELS: Record<RecipeCategory, string> = {
   [RecipeCategory.BREAKFAST]: 'Raňajky',

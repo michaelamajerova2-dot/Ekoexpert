@@ -19,6 +19,7 @@ export const recipeApi = {
     }
     if (filters?.tags) params.append('tags', filters.tags.join(','));
     if (filters?.search) params.append('search', filters.search);
+    if (filters?.sortBy) params.append('sortBy', filters.sortBy);
 
     const response = await api.get<Recipe[]>(`/recipes?${params}`);
     return response.data;
