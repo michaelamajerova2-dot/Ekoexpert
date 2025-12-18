@@ -123,15 +123,55 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Check file size - if over 500KB, compress it
+      const maxSize = 500 * 1024; // 500KB
 
-      // Store file for upload
-      setValue('imageFile', file);
+      if (file.size > maxSize) {
+        // Compress image using canvas
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onloadend = () => {
+          img.src = reader.result as string;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            // Scale down if too large
+            const maxDimension = 1200;
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = (height / width) * maxDimension;
+                width = maxDimension;
+              } else {
+                width = (width / height) * maxDimension;
+                height = maxDimension;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
+
+            // Convert to JPEG with quality 0.7
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            setImagePreview(compressedDataUrl);
+            setValue('image', compressedDataUrl);
+          };
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Small enough, use as-is
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result as string;
+          setImagePreview(dataUrl);
+          setValue('image', dataUrl);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
