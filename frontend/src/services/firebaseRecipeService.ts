@@ -6,6 +6,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  setDoc,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
@@ -13,6 +14,10 @@ import { Recipe, RecipeFilters } from '../types/recipe.types';
 
 const COLLECTION_NAME = 'recipes';
 const recipesCollection = collection(db, COLLECTION_NAME);
+
+// Settings document for custom categories and tags
+const SETTINGS_DOC = 'app_settings';
+const settingsDoc = doc(db, 'settings', SETTINGS_DOC);
 
 // Helper to convert Firestore document to Recipe
 const docToRecipe = (doc: any): Recipe => {
@@ -153,5 +158,62 @@ export const firebaseRecipeApi = {
   delete: async (id: string): Promise<void> => {
     const docRef = doc(db, COLLECTION_NAME, id);
     await deleteDoc(docRef);
+  },
+};
+
+// Settings API for custom categories and tags
+export interface AppSettings {
+  customCategories: string[];
+  customTags: string[];
+}
+
+export const settingsApi = {
+  get: async (): Promise<AppSettings> => {
+    try {
+      const docSnap = await getDoc(settingsDoc);
+      if (docSnap.exists()) {
+        return docSnap.data() as AppSettings;
+      }
+      return { customCategories: [], customTags: [] };
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      return { customCategories: [], customTags: [] };
+    }
+  },
+
+  addCategory: async (category: string): Promise<void> => {
+    const current = await settingsApi.get();
+    if (!current.customCategories.includes(category)) {
+      await setDoc(settingsDoc, {
+        ...current,
+        customCategories: [...current.customCategories, category],
+      });
+    }
+  },
+
+  addTag: async (tag: string): Promise<void> => {
+    const current = await settingsApi.get();
+    if (!current.customTags.includes(tag)) {
+      await setDoc(settingsDoc, {
+        ...current,
+        customTags: [...current.customTags, tag],
+      });
+    }
+  },
+
+  removeCategory: async (category: string): Promise<void> => {
+    const current = await settingsApi.get();
+    await setDoc(settingsDoc, {
+      ...current,
+      customCategories: current.customCategories.filter(c => c !== category),
+    });
+  },
+
+  removeTag: async (tag: string): Promise<void> => {
+    const current = await settingsApi.get();
+    await setDoc(settingsDoc, {
+      ...current,
+      customTags: current.customTags.filter(t => t !== tag),
+    });
   },
 };

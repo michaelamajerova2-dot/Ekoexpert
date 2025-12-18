@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { recipeFormSchema, RecipeFormData } from '../../schemas/recipeSchema';
 import { CATEGORY_LABELS, DEFAULT_TAGS, Recipe } from '../../types/recipe.types';
 import { recipeApi, scrapeApi } from '../../services/api';
+import { settingsApi } from '../../services/firebaseRecipeService';
 import { parseRecipeFromText } from '../../utils/recipeParser';
 
 interface RecipeFormProps {
@@ -26,6 +27,16 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
   const [showUrlSection, setShowUrlSection] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [isLoadingUrl, setIsLoadingUrl] = useState(false);
+
+  // Load custom categories and tags from Firebase on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      const settings = await settingsApi.get();
+      setCustomCategories(settings.customCategories);
+      setCustomTags(settings.customTags);
+    };
+    loadSettings();
+  }, []);
 
   // Helper to convert legacy ingredients array to string
   const convertLegacyIngredients = (ingredients: string | any[]): string => {
@@ -87,20 +98,25 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
     }
   };
 
-  const addCustomCategory = () => {
+  const addCustomCategory = async () => {
     if (newCategory.trim() && !customCategories.includes(newCategory.trim())) {
       const trimmedCategory = newCategory.trim();
       setCustomCategories([...customCategories, trimmedCategory]);
       setValue('category', [...selectedCategories, trimmedCategory]);
       setNewCategory('');
+      // Save to Firebase
+      await settingsApi.addCategory(trimmedCategory);
     }
   };
 
-  const addCustomTag = () => {
+  const addCustomTag = async () => {
     if (newTag.trim() && !customTags.includes(newTag.trim()) && !DEFAULT_TAGS.includes(newTag.trim())) {
-      setCustomTags([...customTags, newTag.trim()]);
-      setValue('tags', [...selectedTags, newTag.trim()]);
+      const trimmedTag = newTag.trim();
+      setCustomTags([...customTags, trimmedTag]);
+      setValue('tags', [...selectedTags, trimmedTag]);
       setNewTag('');
+      // Save to Firebase
+      await settingsApi.addTag(trimmedTag);
     }
   };
 
