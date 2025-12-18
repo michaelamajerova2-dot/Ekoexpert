@@ -109,8 +109,12 @@ export const firebaseRecipeApi = {
 
   create: async (recipe: Omit<Recipe, 'id' | 'createdAt' | 'updatedAt'>): Promise<Recipe> => {
     const now = Timestamp.now();
+
+    // Remove imageFile as Firebase doesn't support File objects
+    const { imageFile, ...recipeWithoutFile } = recipe as any;
+
     const recipeData = {
-      ...recipe,
+      ...recipeWithoutFile,
       createdAt: now,
       updatedAt: now,
     };
@@ -127,8 +131,12 @@ export const firebaseRecipeApi = {
 
   update: async (id: string, recipe: Partial<Recipe>): Promise<Recipe> => {
     const docRef = doc(db, COLLECTION_NAME, id);
+
+    // Remove imageFile as Firebase doesn't support File objects
+    const { imageFile, ...recipeWithoutFile } = recipe as any;
+
     const updateData = {
-      ...recipe,
+      ...recipeWithoutFile,
       updatedAt: Timestamp.now(),
     };
 
