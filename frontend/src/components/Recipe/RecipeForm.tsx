@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import { Plus, X, Upload, FileText, Sparkles } from 'lucide-react';
+import { Plus, X, Upload, FileText, Sparkles, Link, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { recipeFormSchema, RecipeFormData } from '../../schemas/recipeSchema';
 import { CATEGORY_LABELS, DEFAULT_TAGS, Recipe } from '../../types/recipe.types';
-import { recipeApi } from '../../services/api';
+import { recipeApi, scrapeApi } from '../../services/api';
 import { parseRecipeFromText } from '../../utils/recipeParser';
 
 interface RecipeFormProps {
@@ -23,6 +23,9 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
   const [customTags, setCustomTags] = useState<string[]>([]);
   const [showPasteSection, setShowPasteSection] = useState(false);
   const [pasteText, setPasteText] = useState('');
+  const [showUrlSection, setShowUrlSection] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [isLoadingUrl, setIsLoadingUrl] = useState(false);
 
   // Helper to convert legacy ingredients array to string
   const convertLegacyIngredients = (ingredients: string | any[]): string => {
@@ -198,6 +201,62 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
     }
   };
 
+  const handleLoadFromUrl = async () => {
+    if (!urlInput.trim()) {
+      toast.error('Vlož URL adresu receptu!');
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(urlInput);
+    } catch {
+      toast.error('Neplatná URL adresa!');
+      return;
+    }
+
+    setIsLoadingUrl(true);
+    try {
+      const scraped = await scrapeApi.scrapeRecipe(urlInput);
+
+      // Set title
+      if (scraped.title) {
+        setValue('title', scraped.title);
+      }
+
+      // Set description
+      if (scraped.description) {
+        setValue('description', scraped.description);
+      }
+
+      // Set ingredients
+      if (scraped.ingredients) {
+        setValue('ingredients', scraped.ingredients);
+      }
+
+      // Set instructions
+      if (scraped.instructions) {
+        setValue('instructions', scraped.instructions);
+      }
+
+      // Set image
+      if (scraped.image) {
+        setValue('image', scraped.image);
+        setImagePreview(scraped.image);
+      }
+
+      toast.success('Recept bol úspešne načítaný z webu! Skontroluj údaje a uprav ak treba.');
+      setShowUrlSection(false);
+      setUrlInput('');
+    } catch (error: any) {
+      console.error('Error loading recipe from URL:', error);
+      const message = error.response?.data?.error || 'Nepodarilo sa načítať recept z URL. Skús iný odkaz alebo vlož text ručne.';
+      toast.error(message);
+    } finally {
+      setIsLoadingUrl(false);
+    }
+  };
+
   const allCategories = [
     ...Object.entries(CATEGORY_LABELS).map(([key, label]) => ({ key, label })),
     ...customCategories.map(cat => ({ key: cat, label: cat }))
@@ -223,21 +282,102 @@ export const RecipeForm = ({ initialRecipe, isEdit = false }: RecipeFormProps) =
                 Rýchle pridanie receptu
               </h2>
             </div>
-            {!showPasteSection && (
-              <button
-                type="button"
-                onClick={() => setShowPasteSection(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors"
-                style={{
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'white'
-                }}
-              >
-                <FileText className="w-4 h-4" />
-                Vložiť text receptu
-              </button>
+            {!showPasteSection && !showUrlSection && (
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUrlSection(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{
+                    backgroundColor: 'var(--color-primary)',
+                    color: 'white'
+                  }}
+                >
+                  <Link className="w-4 h-4" />
+                  Načítať z URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPasteSection(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{
+                    backgroundColor: 'var(--color-primary-light)',
+                    color: 'var(--color-primary)'
+                  }}
+                >
+                  <FileText className="w-4 h-4" />
+                  Vložiť text
+                </button>
+              </div>
             )}
           </div>
+
+          {showUrlSection && (
+            <div>
+              <div className="mb-3">
+                <p className="text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+                  Vlož odkaz na recept a systém automaticky stiahne a rozpozná všetky údaje.
+                </p>
+                <p className="text-xs italic" style={{ color: 'var(--color-text-secondary)' }}>
+                  Funguje s väčšinou kuchárskych stránok (varecha.sk, toprecepty.cz, allrecipes.com, bbcgoodfood.com...)
+                </p>
+              </div>
+              <div className="flex gap-3 mb-3">
+                <input
+                  type="url"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleLoadFromUrl())}
+                  disabled={isLoadingUrl}
+                  className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2"
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text)'
+                  }}
+                  placeholder="https://varecha.sk/recepty/..."
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleLoadFromUrl}
+                  disabled={isLoadingUrl}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  style={{
+                    backgroundColor: 'var(--color-primary)',
+                    color: 'white'
+                  }}
+                >
+                  {isLoadingUrl ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Načítavam...
+                    </>
+                  ) : (
+                    <>
+                      <Link className="w-4 h-4" />
+                      Načítať recept
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUrlSection(false);
+                    setUrlInput('');
+                  }}
+                  disabled={isLoadingUrl}
+                  className="px-4 py-2 border rounded-lg font-medium transition-colors"
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  Zrušiť
+                </button>
+              </div>
+            </div>
+          )}
 
           {showPasteSection && (
             <div>
@@ -309,9 +449,9 @@ Postup:
             </div>
           )}
 
-          {!showPasteSection && (
+          {!showPasteSection && !showUrlSection && (
             <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-              Máš recept na webe? Jednoducho ho skopíruj a vlož sem. Alebo vyplň formulár ručne nižšie.
+              Máš recept na webe? Načítaj ho priamo z URL alebo skopíruj text. Alebo vyplň formulár ručne nižšie.
             </p>
           )}
         </section>

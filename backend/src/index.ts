@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import recipeRoutes from './routes/recipeRoutes';
+import scrapeRoutes from './routes/scrapeRoutes';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API Routes
 app.use('/api/recipes', recipeRoutes);
+app.use('/api', scrapeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
